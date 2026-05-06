@@ -1166,7 +1166,10 @@ MonoBehaviour:
     type: 3}
   spawnRadius: 1.2
   spawnHeight: 1.2
-  pedestalDistance: 0.8
+  pedestalDistance: 1
+  redPedestalCount: 3
+  greenPedestalCount: 2
+  bluePedestalCount: 1
 --- !u!4 &1345790535
 Transform:
   m_ObjectHideFlags: 0

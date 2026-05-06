@@ -15,6 +15,10 @@ EditorBuildSettings:
     path: Assets/Scenes/basicHeadSet.unity
     guid: b0624dcdc6f374797985fa6f39b4a4e9
   m_configObjects:
+    UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: b1782dccc1722484ba9252440d1d79ae,
+      type: 2}
+    com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: d5245d52c3bbf4293a0609b404239f54,
+      type: 2}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 8add70317cc584ea19b2e3a829d6a33f,
       type: 2}
     com.unity.xr.openxr.settings4: {fileID: 11400000, guid: e3841342169e546c29627922a043ff86,

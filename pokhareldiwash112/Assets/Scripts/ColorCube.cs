@@ -15,6 +15,9 @@ public class ColorCube : MonoBehaviour
     private Material _mat;
     private Rigidbody _rb;
     private bool _placed;
+    private bool _autoMoving; // true when cube is moving automatically
+
+    public void SetAutoMoving(bool value) => _autoMoving = value;
 
     public void Initialize(CubeColor type, Material mat)
     {
@@ -47,26 +50,20 @@ public class ColorCube : MonoBehaviour
     void CheckPedestalContact(GameObject other)
     {
         if (_placed) return;
+        if (_autoMoving) return; // ignore collisions during auto movement
 
         var pedestal = other.GetComponent<Pedestal>();
         if (pedestal == null) return;
+        if (pedestal.IsSolved) return; // pedestal already full
 
         bool correct = pedestal.PedestalType == CubeType;
-        _placed = true;
-        IsCorrectlyPlaced = correct;
 
         if (correct)
         {
-            // Snap to pedestal
-            if (_rb != null) _rb.isKinematic = true;
-            transform.position = pedestal.transform.position + Vector3.up * 0.08f;
+            _placed = true;
+            IsCorrectlyPlaced = true;
             pedestal.MarkSolved(this);
-            Debug.Log($"[ColorCube] {CubeType} correctly placed!");
-        }
-        else
-        {
-            _placed = false;
-            Debug.Log($"[ColorCube] {CubeType} wrong pedestal — try again!");
+            // Pedestal.MarkSolved handles the absorption/destruction
         }
 
         GameManager.Instance.OnCubePlaced(CubeType, pedestal.PedestalType, correct);

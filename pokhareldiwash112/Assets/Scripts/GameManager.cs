@@ -38,8 +38,13 @@ public class GameManager : MonoBehaviour
     private TMPro.TextMeshProUGUI _revealLabel;
     private bool            _gameComplete;
 
+    [Header("Pedestal Unlock Counts")]
+    public int redPedestalCount   = 3;
+    public int greenPedestalCount = 2;
+    public int bluePedestalCount  = 1;
+
     // The final output code revealed when all cubes land correctly
-    private const string FinalCode = "R2-G7-B4";
+    private string FinalCode => $"R{redPedestalCount}-G{greenPedestalCount}-B{bluePedestalCount}";
 
     // ── Colors ───────────────────────────────────────────────────────
     // True colors (visible after reveal)
@@ -48,12 +53,9 @@ public class GameManager : MonoBehaviour
     public static readonly Color TrueGreen = new Color(0.1f,  0.65f, 0.15f);
     public static readonly Color TrueBlue  = new Color(0.15f, 0.4f,  0.85f);
 
-    // Protanopia colors — what LUT does to TrueRed/TrueGreen
-    // TrueRed  (0.8, 0.15, 0.1) through LUT = (143, 143, 19) -> (0.56, 0.56, 0.07)
-    // TrueGreen(0.1, 0.65, 0.15) through LUT = (136, 136, 77) -> (0.53, 0.53, 0.30)
-    // Similar olive - hard to distinguish
-    public static readonly Color ProtoRed   = new Color(0.56f, 0.56f, 0.07f);
-    public static readonly Color ProtoGreen = new Color(0.53f, 0.53f, 0.30f);
+    // Protanopia colors — similar but slightly distinguishable under the filter
+    public static readonly Color ProtoRed   = new Color(0.58f, 0.50f, 0.08f);
+    public static readonly Color ProtoGreen = new Color(0.50f, 0.56f, 0.18f);
     public static readonly Color ProtoBlue  = new Color(0.15f, 0.40f, 0.85f);
 
     void Awake()
@@ -66,11 +68,21 @@ public class GameManager : MonoBehaviour
         if (ovrCameraRig == null)
             ovrCameraRig = Camera.main?.transform.parent ?? Camera.main?.transform;
 
-        // Show start screen immediately — Camera.main is most reliable on Quest
-        Transform camTransform = Camera.main?.transform ?? ovrCameraRig;
-        var startGo = new GameObject("StartScreenUI");
-        var startScreen = startGo.AddComponent<StartScreenUI>();
-        startScreen.Initialize(camTransform);
+        // Check for tag detector — if present, wait for tag
+        // Otherwise show start screen immediately (editor fallback)
+        var tagDetector = FindObjectOfType<AprilTagDetector>();
+        if (tagDetector == null)
+        {
+            Debug.Log("[GameManager] No tag detector — showing start screen directly.");
+            Transform camTransform = Camera.main?.transform ?? ovrCameraRig;
+            var startGo = new GameObject("StartScreenUI");
+            var startScreen = startGo.AddComponent<StartScreenUI>();
+            startScreen.Initialize(camTransform);
+        }
+        else
+        {
+            Debug.Log("[GameManager] Waiting for marker detection...");
+        }
     }
 
     /// <summary>
@@ -147,7 +159,13 @@ public class GameManager : MonoBehaviour
             go.GetComponent<Renderer>().material = mat;
 
             var pedestal = go.AddComponent<Pedestal>();
-            pedestal.Initialize(types[i], mat);
+            int required = types[i] switch {
+                CubeColor.Red   => redPedestalCount,
+                CubeColor.Green => greenPedestalCount,
+                CubeColor.Blue  => bluePedestalCount,
+                _ => 1
+            };
+            pedestal.Initialize(types[i], mat, required);
             _pedestals.Add(pedestal);
         }
     }
@@ -160,50 +178,71 @@ public class GameManager : MonoBehaviour
         fwd.y = 0f; fwd.Normalize();
         Vector3 right = Vector3.Cross(Vector3.up, fwd).normalized;
 
-        CubeColor[] types = { CubeColor.Red, CubeColor.Green, CubeColor.Blue };
-        float spacing = 0.25f;
-        float dist = 0.5f;
-        float height = 0.95f;
+        // Build cube list based on pedestal counts, then shuffle
+        var cubeList = new System.Collections.Generic.List<CubeColor>();
+        for (int i = 0; i < redPedestalCount;   i++) cubeList.Add(CubeColor.Red);
+        for (int i = 0; i < greenPedestalCount; i++) cubeList.Add(CubeColor.Green);
+        for (int i = 0; i < bluePedestalCount;  i++) cubeList.Add(CubeColor.Blue);
 
-        for (int i = 0; i < 3; i++)
+        // Fisher-Yates shuffle
+        for (int i = cubeList.Count - 1; i > 0; i--)
         {
-            float offset = (i - 1) * spacing; // -0.25, 0, +0.25
-            Vector3 pos = new Vector3(camPos.x, 0f, camPos.z)
-                        + fwd * dist
-                        + right * offset
-                        + Vector3.up * height;
+            int j = UnityEngine.Random.Range(0, i + 1);
+            var tmp = cubeList[i]; cubeList[i] = cubeList[j]; cubeList[j] = tmp;
+        }
 
-            // Use prefab if available (recommended), otherwise create primitive
+        int total = cubeList.Count;
+        float spacing = 0.22f;
+        float dist    = 0.5f;
+        float height  = 0.95f;
+
+        for (int i = 0; i < total; i++)
+        {
+            // Evenly distribute around a circle
+            float angle = (i / (float)total) * 2f * Mathf.PI;
+            Vector3 orbitCenter = new Vector3(camPos.x, 0f, camPos.z) + fwd * dist;
+            float radius = spacing * total * 0.18f;
+
+            Vector3 pos = new Vector3(
+                orbitCenter.x + Mathf.Sin(angle) * radius,
+                0f,
+                orbitCenter.z + Mathf.Cos(angle) * radius
+            ) + Vector3.up * 0.95f;
+
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            mat.color = GetTrueColor(cubeList[i]);
+
             GameObject go;
             if (grabbableCubePrefab != null)
             {
                 go = Instantiate(grabbableCubePrefab, pos, Quaternion.identity);
-                go.name = $"Cube_{types[i]}";
+                go.name = $"Cube_{cubeList[i]}_{i}";
                 go.transform.localScale = Vector3.one * 0.1f;
-                // Do NOT touch rigidbody — let prefab's grab setup control it
             }
             else
             {
                 go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                go.name = $"Cube_{types[i]}";
+                go.name = $"Cube_{cubeList[i]}_{i}";
                 go.transform.position = pos;
                 go.transform.localScale = Vector3.one * 0.1f;
                 var rb = go.AddComponent<Rigidbody>();
-                rb.mass = 0.3f;
-                rb.useGravity = false;
-                rb.isKinematic = true;
-                // Grab components handled by prefab — don't add them here
+                rb.mass = 0.3f; rb.useGravity = false; rb.isKinematic = true;
             }
 
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            mat.color = GetTrueColor(types[i]);
-            // Apply color only to main renderer
             var mainRend = go.GetComponent<Renderer>();
             if (mainRend != null) mainRend.material = mat;
 
             var cube = go.AddComponent<ColorCube>();
-            cube.Initialize(types[i], mat);
+            cube.Initialize(cubeList[i], mat);
             _cubes.Add(cube);
+
+            // Add rotation and revolution
+            var motion = go.AddComponent<CubeMotion>();
+            Vector3 orbitCenterPos = new Vector3(camPos.x, 0f, camPos.z) + fwd * dist;
+            motion.orbitCenter = new Vector3(orbitCenterPos.x, 0.95f, orbitCenterPos.z);
+            motion.orbitRadius = spacing * total * 0.18f;
+            motion.spinSpeed   = UnityEngine.Random.Range(45f, 90f);
+            motion.orbitSpeed  = UnityEngine.Random.Range(15f, 25f);
         }
     }
 
@@ -334,16 +373,16 @@ public class GameManager : MonoBehaviour
 
         if (!correct)
         {
-            ShowHint("Not quite — the shapes don't match. Try again.");
+            ShowHint("Wrong pedestal! Try again.");
             return;
         }
 
-        // Check if all pedestals are filled correctly
-        int solvedCount = 0;
+        // Check if all pedestals are fully unlocked
+        bool allUnlocked = true;
         foreach (var p in _pedestals)
-            if (p.IsSolved) solvedCount++;
+            if (!p.IsSolved) { allUnlocked = false; break; }
 
-        if (solvedCount >= 3)
+        if (allUnlocked)
             StartCoroutine(TriggerFinalReveal());
     }
 
@@ -356,31 +395,41 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(1.5f);
         HideHint();
 
-        // Restore true colors AND lift filter simultaneously
-        foreach (var c in _cubes)     c.RevealTrueColor();
-        foreach (var p in _pedestals) p.RevealTrueColor();
-        yield return _filter.FadeOut(1.8f);
+        // Reveal pedestal colors (cubes are already absorbed/destroyed)
+        foreach (var p in _pedestals)
+            if (p != null) p.RevealTrueColor();
+
+        // Fade filter
+        if (_filter != null)
+            yield return _filter.FadeOut(1.8f);
+        else
+            yield return new WaitForSeconds(1.8f);
 
         yield return new WaitForSeconds(0.5f);
 
-        // Light up solved pedestals — they emit the final code
         ShowFinalCode();
     }
 
     void ShowFinalCode()
     {
-        // Use World Space Canvas — same approach as start screen
         var canvasGo = new GameObject("RevealCanvas");
         var canvas = canvasGo.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.WorldSpace;
         canvasGo.AddComponent<UnityEngine.UI.CanvasScaler>();
+        canvasGo.AddComponent<UnityEngine.UI.GraphicRaycaster>();
 
-        // Exact same size/scale as start panel
+        // EventSystem if not present
+        if (FindObjectOfType<UnityEngine.EventSystems.EventSystem>() == null)
+        {
+            var esGo = new GameObject("EventSystem");
+            esGo.AddComponent<UnityEngine.EventSystems.EventSystem>();
+            esGo.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+        }
+
         var rt = canvasGo.GetComponent<RectTransform>();
         rt.sizeDelta = new Vector2(800f, 600f);
         canvasGo.transform.localScale = Vector3.one * 0.001f;
 
-        // Exact same positioning as start panel (PositionCanvasInFrontOfPlayer)
         Transform cam = Camera.main?.transform;
         if (cam != null)
         {
@@ -404,25 +453,114 @@ public class GameManager : MonoBehaviour
         bgRt.offsetMax = Vector2.zero;
 
         // Title
-        CreateCanvasText(canvasGo.transform, "SIGNAL DECODED", new Vector2(0, 150), 55,
+        CreateCanvasText(canvasGo.transform, "SIGNAL DECODED", new Vector2(0, 200), 55,
             new Color(1f, 0.85f, 0.2f), TMPro.FontStyles.Bold);
 
         // Code
-        CreateCanvasText(canvasGo.transform, FinalCode, new Vector2(0, 50), 75,
+        CreateCanvasText(canvasGo.transform, FinalCode, new Vector2(0, 110), 75,
             new Color(1f, 0.85f, 0.2f), TMPro.FontStyles.Bold);
 
         // Message
         CreateCanvasText(canvasGo.transform,
-            "Now you know what protanopia feels like.\nYou have escaped.",
-            new Vector2(0, -80), 28, Color.white);
+            "Now you know what protanopia feels like.",
+            new Vector2(0, 20), 26, Color.white);
 
-        // Animate scale in
+        // Play Again button
+        CreateEndButton(canvasGo.transform, "PLAY AGAIN",
+            new Vector2(-195f, -120f), new Color(0.2f, 0.6f, 0.3f), () =>
+        {
+            Destroy(canvasGo);
+            RestartGame();
+        });
+
+        // Full Colorblind Experience button
+        CreateEndButton(canvasGo.transform, "COLORBLIND\nEXPERIENCE",
+            new Vector2(195f, -120f), new Color(0.2f, 0.3f, 0.7f), () =>
+        {
+            Destroy(canvasGo);
+            StartColorblindExperience();
+        });
+
         StartCoroutine(ScaleIn(canvasGo.transform));
+    }
 
-        // Emit glow on correctly placed cubes
-        foreach (var c in _cubes)
-            if (c.IsCorrectlyPlaced)
-                c.EmitGlow();
+    void CreateEndButton(Transform parent, string label, Vector2 pos, Color color, System.Action onClick)
+    {
+        var btnGo = new GameObject("Button");
+        btnGo.transform.SetParent(parent, false);
+
+        var img = btnGo.AddComponent<UnityEngine.UI.Image>();
+        img.color = color;
+
+        var btnRt = btnGo.GetComponent<RectTransform>();
+        btnRt.anchoredPosition = pos;
+        btnRt.sizeDelta = new Vector2(330f, 110f);
+
+        var btn = btnGo.AddComponent<UnityEngine.UI.Button>();
+        btn.targetGraphic = img;
+        btn.onClick.AddListener(() => onClick());
+
+        // Collider for poke
+        var col = btnGo.AddComponent<BoxCollider>();
+        col.size = new Vector3(330f, 110f, 80f);
+
+        // Add EndButton for OVR pointer/poke support
+        var endBtn = btnGo.AddComponent<EndButton>();
+        endBtn.Initialize(img, onClick);
+
+        var labelGo = new GameObject("Label");
+        labelGo.transform.SetParent(btnGo.transform, false);
+        var tmp = labelGo.AddComponent<TMPro.TextMeshProUGUI>();
+        tmp.text = label;
+        tmp.fontSize = 28f;
+        tmp.fontStyle = TMPro.FontStyles.Bold;
+        tmp.alignment = TMPro.TextAlignmentOptions.Center;
+        tmp.color = Color.white;
+        var labelRt = labelGo.GetComponent<RectTransform>();
+        labelRt.anchorMin = Vector2.zero;
+        labelRt.anchorMax = Vector2.one;
+        labelRt.offsetMin = Vector2.zero;
+        labelRt.offsetMax = Vector2.zero;
+    }
+
+    void RestartGame()
+    {
+        // Clean up current game objects
+        foreach (var c in _cubes)     if (c != null) Destroy(c.gameObject);
+        foreach (var p in _pedestals) if (p != null) Destroy(p.gameObject);
+        _cubes.Clear();
+        _pedestals.Clear();
+        _gameComplete = false;
+
+        // Restart filter and game
+        if (_filter != null) Destroy(_filter);
+        _filter = gameObject.AddComponent<ProtanopiaFilterController>();
+        _filter.Initialize();
+        StartCoroutine(BeginSequence());
+    }
+
+    void StartColorblindExperience()
+    {
+        // Clean up game objects
+        foreach (var c in _cubes)     if (c != null) Destroy(c.gameObject);
+        foreach (var p in _pedestals) if (p != null) Destroy(p.gameObject);
+        _cubes.Clear();
+        _pedestals.Clear();
+        _gameComplete = false;
+
+        // Disable main game filter before launching colorblind experience
+        if (_filter != null)
+        {
+            Destroy(_filter);
+            _filter = null;
+        }
+        // Also disable the passthrough colormap cleanly
+        var pt = FindObjectOfType<OVRPassthroughLayer>();
+        if (pt != null) { try { pt.DisableColorMap(); } catch {} }
+
+        // Launch colorblind experience
+        var cbExp = gameObject.AddComponent<ColorblindExperience>();
+        cbExp.Initialize(ovrCameraRig);
     }
 
     void CreateCanvasText(Transform parent, string text, Vector2 pos, float fontSize,

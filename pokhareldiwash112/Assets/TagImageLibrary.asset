@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 848409ee8ba454f42a5ddff137688a27, type: 3}
+  m_Name: TagImageLibrary
+  m_EditorClassIdentifier: 
+  m_GuidLow: 5219691754491881736
+  m_GuidHigh: 6203585540912236207
+  m_DataStore:
+    m_Storage: []
+  m_Images:
+  - m_SerializedGuid:
+      m_GuidLow: 5706390691197897697
+      m_GuidHigh: 1989307097358591875
+    m_SerializedTextureGuid:
+      m_GuidLow: 9578557644004415965
+      m_GuidHigh: 4793742661350193787
+    m_Size: {x: 25, y: 25}
+    m_SpecifySize: 1
+    m_Name: Tag
+    m_Texture: {fileID: 2800000, guid: 877c59dddf6d84ed7bfa695a8dcb8642, type: 3}
