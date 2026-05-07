@@ -9,8 +9,6 @@
 &emsp;&emsp;- [Meta Quest Setup](#tritanopia-and-protanopia)<br>
 &emsp;&emsp;- [Android Setup](#deuteranopia)<br>
 &emsp;\* [Deployment](#deployment)<br>
-&emsp;&emsp;- [Android](#android)<br>
-&emsp;&emsp;- [Meta Quest 3](#meta-quest-3)<br>
 &emsp;\* [Contributions](#contributions)<br>
 
 ---
@@ -43,11 +41,11 @@ To enable AR/MR, this project uses Unity's built-in XR plug-in, Google ARCore, a
 
 `Unity Plug-in` can be installed by going to `Edit -> Project Settings -> XR Plugin Management`. If the package is uninstalled, you will see this window:<br><br>
 
-![Image showing XR Plugin Management not installed[()<br><br>
+![Image showing XR Plugin Management not installed](https://github.com/cyetheguy/Uark_AR_Colorblindness_Experience/blob/main/media/no_xr_plugin_management.JPG)<br><br>
 
 Pressing `Install XR Plugin Management` will install the necessities to run AR/MR. You should then see this screen:<br><br>
 
-![Image showing XR Plugin Management installed[()<br><br>
+![Image showing XR Plugin Management installed](https://github.com/cyetheguy/Uark_AR_Colorblindness_Experience/blob/main/media/xr_plugin_managment.JPG)<br><br>
 
 Navigate to the `<Android icon> -> Plug-in Providers -> Google ARCore` and check the box. Follow the steps to install the packages.
 
@@ -76,11 +74,18 @@ This project is divided into three parts, one per developer. The following table
 
 | Minigame | Colorblind exploit | Deployment Platform | Package file|
 | :--- | :--- | :--- | :--- |
-| The Hidden Signal | Tritanopia | Meta Quest 3 | [Package]() |
-| Sudoku | Protanopia | Meta Quest 3| [Package]() |
-| Snake | Deuteranopia | Android | [Package]() |
+| The Hidden Signal | Tritanopia | Meta Quest 3 | [Package](https://github.com/cyetheguy/Uark_AR_Colorblindness_Experience/blob/main/published/Hidden%20signal%20Finished_version.zip) |
+| Sudoku | Protanopia | Meta Quest 3| [Package](https://github.com/cyetheguy/Uark_AR_Colorblindness_Experience/blob/main/published/TritanopiaShanakaHMD.unitypackage) |
+| Snake | Deuteranopia | Android | [Package](https://github.com/cyetheguy/Uark_AR_Colorblindness_Experience/blob/main/published/colorblindExperience_Android.unitypackage) |
 
 Download the desired package, and drop it into the [configured](#installation) project. This will automatically install and setup the project component.<br><br>
+
+>[!IMPORTANT]
+>If all else fails (either the `.unitypackage` or `.zip` file to setup), "It worked on my machine."<br>
+>Each folder in this repository was a working project. To load in one of these projects, download the folder. Inside Unity Hub, add the project via:<br>
+>`Add -> Add project from disk`<br>
+>Select the directory (the root of where the `.unity` is), and open it. This will allow Unity to setup the project, and install its dependencies.
+<br>
 
 >[!TIP]
 >Your project may not automatically configure the project to an Andoid platform. To fix this, go to `File -> Build Settings... -> Android -> Switch Platform`. Follow the prompts to switch the deployment platform to Android.
