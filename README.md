@@ -9,11 +9,13 @@
 &emsp;&emsp;- [Meta Quest Setup](#tritanopia-and-protanopia)<br>
 &emsp;&emsp;- [Android Setup](#deuteranopia)<br>
 &emsp;\* [Deployment](#deployment)<br>
+&emsp;&emsp;- [File Formats](#file-formats)<br>
 &emsp;\* [Contributions](#contributions)<br>
 
 ---
 
 # Project Overview
+This project presents the AR Colorblindness Experience, a multi-platform educational awareness suite that simulates three types of color vision deficiency through interactive augmented and mixed reality applications. Players progress through three games in sequence or parallel: a handheld AR snake game simulating deuteranopia, a Meta Quest 3 mixed reality Sudoku puzzle simulating tritanopia, and an immersive Meta Quest 3 mixed reality experience called The Hidden Signal, which simulates protanopia through real-time passthrough color LUT filtering. Each game generates a two-digit unlock code for the HMD. Combining all three codes unlocks a final Colorblind Experience mode on the Quest 3 headset, where users can switch between all three colorblindness filters applied live to passthrough video. The Android app automatically applies the codes on minigame completion, and unlock filter selection once all three games are completed and the prize marker is scanned. This system demonstrates AR and MR as effective tools for colorblindness education and empathy building.<br><br>
 
 # Installation
 
@@ -93,6 +95,25 @@ Download the desired package, and drop it into the [configured](#installation) p
 Select the device (Android or Meta Quest 3) you wish to deploy to in the dropdown in `Run Device`. (Press `Refresh` if your device is not listed).<br><br>
 Select `Build and Run`, save your `.apk`, and the project component will be deployed to your device! Congrats!
 
+## File Formats
+This repository contains several distinct sub-projects, mini-games, and templates. The following list denotes each production subfolder, and what their custom file structure looks like (ignore Unity settings):<br><br>
+\* <ins>**Shanaka/TritanopiaShanakaHMD**</ins><br>
+&emsp;Files are stored in main Assets directory.<br>
+&emsp;- **Scripts:** Houses the specialized logic for generating and managing a playable grid. It includes scripts for handling player inputs, enforcing puzzle rules, managing the overall game state, and a dedicated controller for the Tritanopia filter.<br>
+&emsp;- **Prefabs:** Contains the pre-configured grid cells, the interactive puzzle cubes that the player manipulates, and the master game setups ready to be dropped into a scene.<br>
+&emsp;- **Materials & Shaders:** Features a robust set of color-coded materials tailored for puzzle solving (e.g., standard red, blue, green) alongside their specific Tritanopia-filtered counterparts to demonstrate visual differences.<br>
+\* <ins>**cyetheguy**</ins><br>
+&emsp;`Resources` folder used to store dynamic assets.<br>
+&emsp;- **Scripts:** Drives the mechanics of the game. This includes the behavioral logic for the snake's movement and growth, logic for spawning collectible fruits and poison, and scripts that allow the user to toggle between different colorblind perspectives (Deuteranopia, Protanopia, Tritanopia). It also includes systems for detecting physical AprilTags via the camera.<br>
+&emsp;- **Prefabs:** Pre-built, modular pieces for the game, including the snake's segmented anatomy, distinct fruit/obstacle items, and filter-specific candidate objects.<br>
+&emsp;- **Materials:** Specific visual skins customized to demonstrate how in-game hazards and rewards (fruits, poisons, ground planes) appear under various colorblind conditions.<br>
+&emsp;- **Images & Textures:** Reference charts and textures that visually depict the different colorblind conditions and game UI elements.<br>
+\* <ins>**pokhareldiwash112**</ins><br>
+&emsp;Unlike the other projects, it relies heavily on LUTs (Look-Up Tables) rather than Shader Graphs.<br>
+&emsp;- **Scripts:** Contains mechanics for VR/AR physical interaction, specifically the logic for dragging and manipulating 3D objects in physical space. It also handles managing UI start and end screen transitions.
+&emsp;- **Prefabs:** Houses the primary interactive objects (like grab-able cubes) used to test physics and physical interactions within the scene.<br>
+&emsp;- **LUT Textures & Images:** Instead of standard shaders, this module utilizes customized Look-Up Table (LUT) image files to perform advanced color grading on the camera, accurately simulating Protanopia, Deuteranopia, and Tritanopia.<br>
+&emsp;- **External Models:** A collection of self-contained, imported 3D asset packs used to populate the environment. This features low-poly models of marine life, boats, and treasure crates, complete with their own specific textures.<br><br>
 # Contributions
 | Name | GitHub Account |
 | :--- | :--- |
