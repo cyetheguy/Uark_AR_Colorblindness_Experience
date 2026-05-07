@@ -110,7 +110,7 @@ This repository contains several distinct sub-projects, mini-games, and template
 &emsp;- **Images & Textures:** Reference charts and textures that visually depict the different colorblind conditions and game UI elements.<br>
 \* <ins>**pokhareldiwash112**</ins><br>
 &emsp;Unlike the other projects, it relies heavily on LUTs (Look-Up Tables) rather than Shader Graphs.<br>
-&emsp;- **Scripts:** Contains mechanics for VR/AR physical interaction, specifically the logic for dragging and manipulating 3D objects in physical space. It also handles managing UI start and end screen transitions.
+&emsp;- **Scripts:** Contains mechanics for VR/AR physical interaction, specifically the logic for dragging and manipulating 3D objects in physical space. It also handles managing UI start and end screen transitions.<br>
 &emsp;- **Prefabs:** Houses the primary interactive objects (like grab-able cubes) used to test physics and physical interactions within the scene.<br>
 &emsp;- **LUT Textures & Images:** Instead of standard shaders, this module utilizes customized Look-Up Table (LUT) image files to perform advanced color grading on the camera, accurately simulating Protanopia, Deuteranopia, and Tritanopia.<br>
 &emsp;- **External Models:** A collection of self-contained, imported 3D asset packs used to populate the environment. This features low-poly models of marine life, boats, and treasure crates, complete with their own specific textures.<br><br>
