@@ -7,8 +7,7 @@
 &emsp;&emsp;- [Unity Version](#unity-version)<br>
 &emsp;&emsp;- [Packages to run AR/MR](#ar-packages)<br>
 &emsp;&emsp;- [Meta Quest Setup](#tritanopia-and-protanopia)<br>
-&emsp;&emsp;- [Android Setup](#protanopia)<br>
-&emsp;&emsp;- [Deuteranopia](#deuteranopia)<br>
+&emsp;&emsp;- [Android Setup](#deuteranopia)<br>
 &emsp;\* [Deployment](#deployment)<br>
 &emsp;&emsp;- [Android](#android)<br>
 &emsp;&emsp;- [Meta Quest 3](#meta-quest-3)<br>
@@ -50,21 +49,48 @@ Pressing `Install XR Plugin Management` will install the necessities to run AR/M
 
 ![Image showing XR Plugin Management installed[()<br><br>
 
-Navigate to the `\<Android icon\> -> Plug-in Providers -> Google ARCore` and check the box. Follow the steps to install the packages.
+Navigate to the `<Android icon> -> Plug-in Providers -> Google ARCore` and check the box. Follow the steps to install the packages.
 
 >[!TIP]
 >You can verify that all packages are installed by going to `Window -> Package Manager` and verifying that "Google ARCore XR Plugin is installed (the button will way remove instead of install).
 
-Next, install the AR Foundation package. This can be achieved by navigating to `Window -> Pakcage Manager -> Unity Registry -> AR Foundation`, and pressing the install button.
+Next, install the AR Foundation package. This can be achieved by navigating to `Window -> Pakcage Manager -> Unity Registry -> AR Foundation`, and pressing the install button.<br>
 ## Tritanopia and Protanopia
+These packages are designed for deployment on a Meta Quest 3. With a headset in [developer mode](https://developers.meta.com/horizon/documentation/native/android/mobile-device-setup/), install the following packages:
+| Name | Unity Package |
+| :--- | :--- |
+| Meta XR Core SDK | [Unity Asset Store](https://assetstore.unity.com/packages/tools/integration/meta-xr-core-sdk-269169)|
+| Meta Interactions SDK | [Unity Asset Store](https://assetstore.unity.com/packages/tools/integration/meta-xr-interaction-sdk-265014)|
 
+>[!WARNING]
+>There are two interaction packages: `Meta Interactions SDK` and `Meta Interactions SDK Essentials`. This project was developed using the `Meta Interactions SDK` package. Choosing the latter package may yield incorrect results.
+
+Return to your project, and install the packages via `Window -> Package Manager -> <package>`. Follow any recommendations to complete setup for Meta Quest XR.<br>
 
 ## Deuteranopia
+This project was designed to run on an Android device, and needs no installation of external packages. So take a break, and enjoy the birds! 🙂
 
 # Deployment
 
-## Android
+This project is divided into three parts, one per developer. The following table can be used to download a Unity package to import the full project into the game:
 
-## Meta Quest 3
+| Minigame | Colorblind exploit | Deployment Platform | Package file|
+| :--- | :--- | :--- | :--- |
+| The Hidden Signal | Tritanopia | Meta Quest 3 | [Package]() |
+| Sudoku | Protanopia | Meta Quest 3| [Package]() |
+| Snake | Deuteranopia | Android | [Package]() |
+
+Download the desired package, and drop it into the [configured](#installation) project. This will automatically install and setup the project component.<br><br>
+
+>[!TIP]
+>Your project may not automatically configure the project to an Andoid platform. To fix this, go to `File -> Build Settings... -> Android -> Switch Platform`. Follow the prompts to switch the deployment platform to Android.
+
+Select the device (Android or Meta Quest 3) you wish to deploy to in the dropdown in `Run Device`. (Press `Refresh` if your device is not listed).<br><br>
+Select `Build and Run`, save your `.apk`, and the project component will be deployed to your device! Congrats!
 
 # Contributions
+| Name | GitHub Account |
+| :--- | :--- |
+| Caleb Young | [@cyetheguy](https://github.com/cyetheguy) |
+| Diwash Pokharel | [@pokhareldiwash112](https://github.com/pokhareldiwash112) |
+| Shanaka Edirisinghe | [@ahanakasampath](https://github.com/shanakasampath) |
