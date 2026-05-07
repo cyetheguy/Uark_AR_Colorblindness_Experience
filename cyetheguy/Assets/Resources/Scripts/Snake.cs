@@ -91,7 +91,7 @@ public class Snake : MonoBehaviour
     void SetCountText()
     {
         string text = "Snake Minigame\nExploits Deuteranopia\nLength (5 to win): " + count.ToString();
-        if (ImageTrackingManager.deuteranopiaComplete) text = text + "\n\nLEVEL COMPLETE";
+        if (ImageTrackingManager.deuteranopiaComplete) text = text + "\n\nLEVEL COMPLETE\n\nHMD CODE: 20";
         countText.text = text;
     }
 
